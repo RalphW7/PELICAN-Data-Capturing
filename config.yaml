@@ -1,0 +1,50 @@
+# Capture rig configuration. Anything left out uses the defaults in capture.py.
+
+output_root: /home/ubuntu/captures
+file_owner: ubuntu     # the script runs as root; sessions are handed to this user afterwards
+mode: video            # "video" (segmented .mkv) or "jpeg" (still frames)
+
+camera:
+  width: 1920          # 16:9, matching the IMX708's native aspect ratio
+  height: 1080
+  fps: 14              # the camera service offers at most 14 fps for the Camera Module 3
+  index: 0             # counts detected cameras from 0; one camera = 0, whichever connector
+  props: ""            # optional qtiqmmfsrc settings, e.g. exposure or white balance:
+                       #   props: "<setting>=<value> <setting>=<value>"
+                       # list them with: sudo gst-inspect-1.0 qtiqmmfsrc
+  source: "qtiqmmfsrc name=camsrc camera={index} {props} ! video/x-raw,format=NV12,width={width},height={height},framerate={fps}/1"
+  encoder: auto        # tries qtic2venc, then v4l2h264enc; or name one explicitly
+
+video:
+  segment_seconds: 60  # one file per minute; a power cut loses at most the open segment's tail
+
+jpeg:
+  interval_s: 0.5      # 2 frames per second
+  quality: 90
+
+button:
+  chip: null           # FILL IN, e.g. /dev/gpiochip4 (from `sudo gpioinfo` and the Rubik Pi pinout)
+  line: null           # FILL IN: line offset on that chip, not the header pin number
+  active_low: true     # button wired between the GPIO pin and GND
+  bias: pull_up
+  mode: toggle         # "toggle" for a momentary push button, "level" for an on/off switch
+  debounce_ms: 30
+  long_press_s: 3.0
+  long_press_action: none   # set to "shutdown" for a safe power-off on long press
+
+led:
+  enabled: false
+  chip: null           # FILL IN if you use an LED
+  line: null
+  active_low: false
+
+storage:
+  min_free_gb: 2.0
+
+telemetry:
+  enabled: false
+  device: null         # FILL IN, e.g. /dev/ttyHS1: the UART wired to the flight controller
+  baud: 921600
+  rate_hz: 20
+  source_system: 1
+  status_text: true

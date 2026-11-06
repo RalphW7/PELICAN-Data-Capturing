@@ -1,0 +1,21 @@
+[Unit]
+Description=Landing-zone dataset capture service
+After=multi-user.target
+
+[Service]
+Type=simple
+# Root keeps GPIO, serial, and the optional long-press shutdown simple.
+# If you run it as another user, give that user access to /dev/gpiochip* and the UART.
+User=root
+WorkingDirectory=/opt/capture
+ExecStart=/usr/bin/python3 /opt/capture/capture.py --config /opt/capture/config.yaml
+Restart=on-failure
+RestartSec=3
+# Give the pipeline time to finalize the open file on stop.
+TimeoutStopSec=20
+KillSignal=SIGTERM
+# Signal only the Python process; it stops GStreamer itself so the file is finalized.
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
